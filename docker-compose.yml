@@ -28,7 +28,7 @@ services:
       - "APP_ENV=prod"
       - "SECRET=some-secret-value"
       - "TRUSTED_PROXIES=127.0.0.1,REMOTE_ADDR"
-      - "DATABASE_URL=mysql://contao:contao@database:3306/contao"
+      - "DATABASE_URL=mysql://contao:contao@database:3306/contao?serverVersion=8.0.20"
       - "MAILER_URL=smtp://${MAILER_HOST}:${MAILER_PORT}?username=${MAILER_USER}&password=${MAILER_PASSWORD}&encryption=tls"
     volumes:
       - contao-web:/var/www/html
