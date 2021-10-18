@@ -1,0 +1,55 @@
+version: "3.3"
+services:
+  server:
+    image: httpd:2.4-alpine
+    ports:
+      - 8088:80
+    volumes:
+      - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./apache/httpd-vhosts.conf:/usr/local/apache2/conf/extra/httpd-vhosts.conf
+      - contao-web:/var/www/html
+    depends_on:
+      - php-fpm
+    links:
+      - php-fpm
+
+  php-fpm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # PHP Settings (example values)
+      - "ENV_SUBSTITUTION_ENABLE=true"
+      - "PHP_MEMORY_LIMIT=512M"
+      - "PHP_SESSION_GC_MAXLIFETIME=7200"
+
+      # Contao Settings (example values)
+      # NOTE: we are using a "production" environment variable here.
+      - "APP_ENV=prod"
+      - "SECRET=some-secret-value"
+      - "TRUSTED_PROXIES=127.0.0.1,REMOTE_ADDR"
+      - "DATABASE_URL=mysql://contao:contao@database:3306/contao"
+      - "MAILER_URL=smtp://${MAILER_HOST}:${MAILER_PORT}?username=${MAILER_USER}&password=${MAILER_PASSWORD}&encryption=tls"
+    volumes:
+      - contao-web:/var/www/html
+    depends_on:
+      - database
+    links:
+      - database
+
+  database:
+    image: mysql:8
+    command: mysqld --event-scheduler=ON
+    volumes:
+      - contao-database:/var/lib/mysql
+    ports:
+      - 3336:3306
+    environment:
+      - "MYSQL_RANDOM_ROOT_PASSWORD=yes"
+      - "MYSQL_DATABASE=contao"
+      - "MYSQL_USER=contao"
+      - "MYSQL_PASSWORD=contao"
+
+volumes:
+  contao-web:
+  contao-database:
